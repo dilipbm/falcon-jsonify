@@ -92,18 +92,19 @@ class Middleware(object):
 
     def process_request(self, req, resp):
         """Middleware request"""
-        if not req.content_length:
-            return
-        body = req.stream.read()
-        req.json = {}
-        self.req = req
-        req.get_json = self.get_json  # helper function
-        try:
-            req.json = json.loads(body.decode('utf-8'))
-        except UnicodeDecodeError:
-            self.bad_request("Invalid encoding", "Could not decode as UTF-8")
-        except ValueError:
-            self.bad_request("Malformed JSON", "Syntax error")
+        if req.content_type == "application/json":
+            if not req.content_length:
+                return
+            body = req.stream.read()
+            req.json = {}
+            self.req = req
+            req.get_json = self.get_json  # helper function
+            try:
+                req.json = json.loads(body.decode('utf-8'))
+            except UnicodeDecodeError:
+                self.bad_request("Invalid encoding", "Could not decode as UTF-8")
+            except ValueError:
+                self.bad_request("Malformed JSON", "Syntax error")
 
     def process_response(self, req, resp, resource, req_succeeded):
         """Middleware response"""
